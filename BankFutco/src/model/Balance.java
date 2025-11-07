@@ -12,8 +12,11 @@ public class Balance {
 	private BigDecimal cashOut;
 	private BigDecimal closingBalance;
 
-// Constructor sin argumentos
-	public Balance() {
+
+// Constructor
+
+    public Balance() {
+
 	}
 	
 // Constructor COMPLETO 
