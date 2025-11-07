@@ -2,7 +2,6 @@ package services;
 
 import java.util.List;
 import java.util.Optional;
-
 import model.Loans;
 
 public interface ILoansService {

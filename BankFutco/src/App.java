@@ -70,11 +70,6 @@ public class App {
             String opt = sc.nextLine().trim();
 
             switch (opt) {
-<<<<<<< HEAD
-                case "1": // CREATE
-                    System.out.println("[" + entityName + "] Crear - Ingrese datos:");
-                    handleCreateOrUpdate(sc, entityName, "Create");
-=======
                 case "1":
                     
                     System.out.println("Ingrese los siguientes datos separados por espacios: número de la cuenta, nombre, email, celular, tipo de cuenta y dirección");
@@ -88,7 +83,7 @@ public class App {
                     
                     /*Account account = new Account("ACC010", "Johanny Valencia", "johanny.valencia@example.com", "3000000001", "Savings", "Calle 20 de Turbaco-Bolivar"); 
                     accountService.save(account); */
->>>>>>> 34eca8ee3c5a2b5d1d1dc5479a48e339ac814eb6
+
                     break;
                 case "2": // READ BY ID
                     System.out.print("[" + entityName + "] Leer por id - Ingrese ID: ");
