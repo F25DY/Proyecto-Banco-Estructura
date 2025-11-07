@@ -1,46 +1,50 @@
 package repositories;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
+import java.util.Optional; // ¡Importar BigDecimal!
 import model.Cards;
 
 public class CardRepository {
 
-    private List<Cards> storage = new ArrayList<>();
+    private final List<Cards> storage = new ArrayList<>();
 
-    // Constructor con datos de ejemplo
+    // 1. Constructor sin argumentos que llama a initData()
     public CardRepository() {
-        storage.add(new Cards("CARD001", "Ana Perez", "1234-5678-9012-3456", "Visa", 5000.00));
-        storage.add(new Cards("CARD002", "Luis Gomez", "2345-6789-0123-4567", "MasterCard", 3000.00));
-        storage.add(new Cards("CARD003", "María Ruiz", "3456-7890-1234-5678", "Visa", 7000.00));
-        storage.add(new Cards("CARD004", "Carlos Díaz", "4567-8901-2345-6789", "American Express", 4000.00));
-        storage.add(new Cards("CARD005", "Sofia Morales", "5678-9012-3456-7890", "Visa", 6000.00));
-        storage.add(new Cards("CARD006", "Diego Torres", "6789-0123-4567-8901", "MasterCard", 2000.00));
-        storage.add(new Cards("CARD007", "Lucia Herrera", "7890-1234-5678-9012", "Visa", 8000.00));
-        storage.add(new Cards("CARD008", "Miguel Ramos", "8901-2345-6789-0123", "MasterCard", 5500.00));
-        storage.add(new Cards("CARD009", "Natalia Vega", "9012-3456-7890-1234", "Visa", 10000.00));
-        storage.add(new Cards("CARD010", "Jorge Castro", "0123-4567-8901-2345", "American Express", 2500.00));
+        initData();
     }
 
-    public List<Cards> getStorage() {
-        return storage;
+    // 2. Método para inicializar los datos
+    private void initData() {
+        // Formato CORRECTO: new Cards(cardNumber, type, totalLimit, amountUsed, available)
+        
+        // Tarjetas de Crédito y Débito de ejemplo:
+        storage.add(new Cards("CARD001", "Credit", new BigDecimal("5000.00"), new BigDecimal("1500.00"), new BigDecimal("3500.00")));
+        storage.add(new Cards("CARD002", "Debit", new BigDecimal("0.00"), new BigDecimal("0.00"), new BigDecimal("0.00"))); 
+        storage.add(new Cards("CARD003", "Credit", new BigDecimal("7000.00"), new BigDecimal("100.00"), new BigDecimal("6900.00")));
+        storage.add(new Cards("CARD004", "Credit", new BigDecimal("4000.00"), new BigDecimal("3500.00"), new BigDecimal("500.00")));
+        storage.add(new Cards("CARD005", "Debit", new BigDecimal("0.00"), new BigDecimal("0.00"), new BigDecimal("0.00")));
+        storage.add(new Cards("CARD006", "Credit", new BigDecimal("2000.00"), new BigDecimal("0.00"), new BigDecimal("2000.00")));
+        storage.add(new Cards("CARD007", "Credit", new BigDecimal("8000.00"), new BigDecimal("4000.00"), new BigDecimal("4000.00")));
     }
 
-    public void setStorage(List<Cards> storage) {
-        this.storage = storage;
-    }
-
-    // Guardar una tarjeta
+    // Guardar una tarjeta (simula creación y actualización)
     public Cards save(Cards card) {
+        if (card == null || card.getCardNumber() == null) {
+            throw new IllegalArgumentException("Card o cardNumber no puede ser null");
+        }
+        // Simula la actualización: elimina el registro anterior si existe
+        storage.removeIf(c -> c.getCardNumber().equals(card.getCardNumber()));
         storage.add(card);
         return card;
     }
 
     // Buscar una tarjeta por número
     public Optional<Cards> findById(String cardNumber) {
+        if (cardNumber == null) return Optional.empty();
         return storage.stream()
-                .filter(c -> c.getCardNumber().equals(cardNumber))
+                .filter(c -> cardNumber.equals(c.getCardNumber()))
                 .findFirst();
     }
 
@@ -54,4 +58,3 @@ public class CardRepository {
         return storage.removeIf(c -> c.getCardNumber().equals(cardNumber));
     }
 }
-
