@@ -1,34 +1,30 @@
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
+import java.util.List;
 import java.util.Optional;
 import java.util.Scanner;
-
 import model.Account;
+import model.Balance;
+import model.Cards;
+import model.Loans;
 import services.AccountService;
+import services.BalanceService;
+import services.CardService;
+import services.LoansServices;
+
+// Si tu archivo App.java NO está en una carpeta de paquete (ej: src/App.java), 
+// debes ELIMINAR O COMENTAR la línea "package app;".
 
 public class App {
-    private static AccountService accountService=new AccountService();
-    public static void main(String[] args) throws Exception {
-        ////accountService.findAll().stream().forEach(a-> System.out.println(a));
-        //accountService.findAll().stream().forEach(System.out::println);
-        //Account account = new Account("ACC010", "Johanny Valencia", "johanny.valencia@example.com", "3000000001",
-        //        "Savings", "Calle 20 de Turbaco-Bolivar");
-        //accountService.save(account);
-        //System.out.println("*".repeat(100));
-        //accountService.findAll().stream().forEach(System.out::println);
-        //System.out.println("*".repeat(100));
-        ////accountService.findById("ACC009").ifPresentOrElse(
-        ////        acc -> System.out.println("Encontrado: " + acc),
-        ////        () -> System.out.println(" account number no encontrado."));
-        //Optional<Account> a = accountService.findById("ACC009");
-        //if(a==null){
-        //    System.out.println(" account number no encontrado.");
-        //}
-        //else{
-        //    System.out.println( "Encontrado: " + a);
-        //}
-        //accountService.deleteById("ACC010");
-        //System.out.println("/".repeat(100));
-        //accountService.findAll().stream().forEach(System.out::println);
+    
+    // Inicialización de TODOS los servicios
+    private static final AccountService accountService = new AccountService();
+    private static final BalanceService balanceService = new BalanceService();
+    private static final LoansServices loansService = new LoansServices();
+    private static final CardService cardService = new CardService();
 
+    public static void main(String[] args) throws Exception {
         try (Scanner sc = new Scanner(System.in)) {
             boolean running = true;
             while (running) {
@@ -56,10 +52,9 @@ public class App {
                 }
             }
         }
-
     }
 
-        private static void printMainMenu() {
+    private static void printMainMenu() {
         System.out.println("\n=== Menú Principal ===");
         System.out.println("1. Account");
         System.out.println("2. Balance");
@@ -74,39 +69,30 @@ public class App {
         while (!back) {
             printCrudMenu(entityName);
             String opt = sc.nextLine().trim();
+
             switch (opt) {
-                case "1":
-                    System.out.println("[" + entityName + "] Crear - placeholder (pedir datos e invocar servicio)");
-                    //Deben tomar los datos por consola, usar Scanner
-                    Account account = new Account("ACC010", "Johanny Valencia", "johanny.valencia@example.com", "3000000001", "Savings", "Calle 20 de Turbaco-Bolivar"); 
-                    accountService.save(account); 
+                case "1": // CREATE
+                    System.out.println("[" + entityName + "] Crear - Ingrese datos:");
+                    handleCreateOrUpdate(sc, entityName, "Create");
                     break;
-                case "2":
-                    System.out.print("[" + entityName + "] Leer por id - ingrese id: ");
-                    String id = sc.nextLine().trim();
-                    System.out.println("Buscar " + entityName + " con id=" + id + " - placeholder");
-                    accountService.findById(id).ifPresentOrElse(
-                        acc -> System.out.println("Encontrado: " + acc),
-                        () -> System.out.println(entityName + " con id=" + id + " no encontrado.")
-                    );
+                case "2": // READ BY ID
+                    System.out.print("[" + entityName + "] Leer por id - Ingrese ID: ");
+                    String idRead = sc.nextLine().trim();
+                    handleRead(entityName, idRead);
                     break;
-                case "3":
-                    System.out.println("[" + entityName + "] Listar todos - placeholder");
-                    accountService.findAll().stream().forEach(System.out::println);
+                case "3": // LIST ALL
+                    System.out.println("[" + entityName + "] Listar todos");
+                    handleListAll(entityName);
                     break;
-                case "4":
-                    System.out.print("[" + entityName + "] Actualizar - ingrese id: ");
+                case "4": // UPDATE
+                    System.out.print("[" + entityName + "] Actualizar - Ingrese ID a actualizar: ");
                     String idUp = sc.nextLine().trim();
-                    System.out.println("Actualizar " + entityName + " id=" + idUp + " - placeholder");
-                    //Deben tomar los datos por consola, usar Scanner
-                    Account updateAccount = new Account("ACC010", "Johanny Valencia", "johanny.valencia@example.com", "3000000001", "Savings", "Calle 20 de Turbaco-Bolivar"); 
-                    accountService.save(updateAccount);
+                    handleCreateOrUpdate(sc, entityName, "Update", idUp);
                     break;
-                case "5":
-                    System.out.print("[" + entityName + "] Eliminar - ingrese id: ");
+                case "5": // DELETE
+                    System.out.print("[" + entityName + "] Eliminar - Ingrese ID a eliminar: ");
                     String idDel = sc.nextLine().trim();
-                    System.out.println("Eliminar " + entityName + " id=" + idDel + " - placeholder");
-                    accountService.deleteById(idDel);
+                    handleDelete(entityName, idDel);
                     break;
                 case "0":
                     back = true;
@@ -117,6 +103,215 @@ public class App {
         }
     }
 
+    // --- MÉTODOS AUXILIARES CON ENTRADA DE USUARIO (Scanner) ---
+    
+    // Método para crear y actualizar (usa save en el servicio)
+    private static void handleCreateOrUpdate(Scanner sc, String entityName, String action, String... id) {
+        String targetId = id.length > 0 ? id[0] : null; 
+        
+        try {
+            switch (entityName) {
+                case "Account":
+                    String accId;
+                    if (action.equals("Create")) {
+                        System.out.print("Ingrese ID de Cuenta (ej: ACC011): ");
+                        accId = sc.nextLine().trim();
+                    } else {
+                        accId = targetId;
+                        if (accountService.findById(accId).isEmpty()) {
+                            System.out.println("Error: Cuenta con ID " + accId + " no encontrada para actualizar.");
+                            return;
+                        }
+                    }
+                    System.out.print("Nombre del Cliente: ");
+                    String name = sc.nextLine();
+                    System.out.print("Email: ");
+                    String email = sc.nextLine();
+                    System.out.print("Teléfono: ");
+                    String phone = sc.nextLine();
+                    System.out.print("Tipo (Savings/Checking): ");
+                    String type = sc.nextLine();
+                    System.out.print("Dirección: ");
+                    String address = sc.nextLine();
+
+                    Account account = new Account(accId, name, email, phone, type, address);
+                    accountService.save(account);
+                    System.out.println("✅ Cuenta " + accId + " guardada/actualizada con éxito.");
+                    break;
+
+                case "Balance":
+                    String balAccId;
+                    LocalDate balDate;
+                    
+                    if (action.equals("Create")) {
+                        System.out.print("Ingrese ID de Cuenta asociada (ej: ACC001): ");
+                        balAccId = sc.nextLine().trim();
+                        System.out.print("Ingrese Fecha del registro (YYYY-MM-DD): ");
+                        balDate = LocalDate.parse(sc.nextLine().trim());
+                    } else { 
+                        if (targetId == null) throw new IllegalArgumentException("ID compuesto requerido para actualizar Balance.");
+                        String[] parts = targetId.split("-");
+                        balAccId = parts[0];
+                        balDate = LocalDate.parse(parts[1]);
+                    }
+
+                    System.out.print("Descripción: ");
+                    String description = sc.nextLine();
+                    System.out.print("Entrada de Efectivo (Cash In): ");
+                    BigDecimal cashIn = new BigDecimal(sc.nextLine());
+                    System.out.print("Salida de Efectivo (Cash Out): ");
+                    BigDecimal cashOut = new BigDecimal(sc.nextLine());
+                    System.out.print("Saldo Final (Closing Balance): ");
+                    BigDecimal closingBalance = new BigDecimal(sc.nextLine());
+
+                    Balance newBalance = new Balance(balAccId, balDate, description, cashIn, cashOut, closingBalance);
+                    balanceService.save(newBalance);
+                    System.out.println("✅ Balance para " + balAccId + " en " + balDate + " guardado/actualizado.");
+                    break;
+                
+                case "Loans":
+                    String loanId;
+                    if (action.equals("Create")) {
+                        System.out.print("Ingrese ID de Préstamo (ej: L005): ");
+                        loanId = sc.nextLine().trim();
+                    } else {
+                        loanId = targetId;
+                        if (loansService.findById(loanId).isEmpty()) {
+                            System.out.println("Error: Préstamo con ID " + loanId + " no encontrado para actualizar.");
+                            return;
+                        }
+                    }
+
+                    System.out.print("Fecha de registro (YYYY-MM-DD): ");
+                    LocalDate loanDate = LocalDate.parse(sc.nextLine().trim());
+                    System.out.print("Tipo de Préstamo (Home/Vehicle/Personal): ");
+                    String loanType = sc.nextLine();
+                    System.out.print("Monto Total del Préstamo: ");
+                    BigDecimal totalLoan = new BigDecimal(sc.nextLine());
+                    System.out.print("Monto Pagado hasta la fecha: ");
+                    BigDecimal amountPaid = new BigDecimal(sc.nextLine());
+                    System.out.print("Monto Pendiente: ");
+                    BigDecimal outstandingAmt = new BigDecimal(sc.nextLine());
+
+                    Loans newLoan = new Loans(loanId, loanDate, loanType, totalLoan, amountPaid, outstandingAmt);
+                    loansService.save(newLoan);
+                    System.out.println("✅ Préstamo " + loanId + " guardado/actualizado.");
+                    break;
+                
+                case "Cards":
+                    String cardId;
+                    if (action.equals("Create")) {
+                        System.out.print("Ingrese ID de Tarjeta (ej: C008): ");
+                        cardId = sc.nextLine().trim();
+                    } else {
+                        cardId = targetId;
+                        if (cardService.findById(cardId).isEmpty()) {
+                            System.out.println("Error: Tarjeta con ID " + cardId + " no encontrada para actualizar.");
+                            return;
+                        }
+                    }
+
+                    System.out.print("Tipo de Tarjeta (Credit/Debit): ");
+                    String cardType = sc.nextLine();
+                    System.out.print("Límite Total: ");
+                    BigDecimal totalLimit = new BigDecimal(sc.nextLine());
+                    System.out.print("Monto Usado: ");
+                    BigDecimal amountUsed = new BigDecimal(sc.nextLine());
+                    System.out.print("Monto Disponible: ");
+                    BigDecimal available = new BigDecimal(sc.nextLine());
+
+                    Cards newCard = new Cards(cardId, cardType, totalLimit, amountUsed, available);
+                    cardService.save(newCard);
+                    System.out.println("✅ Tarjeta " + cardId + " guardada/actualizada.");
+                    break;
+            }
+        } catch (DateTimeParseException e) {
+            System.err.println("❌ Error: Formato de fecha inválido. Use YYYY-MM-DD.");
+        } catch (NumberFormatException e) {
+            System.err.println("❌ Error: Monto inválido. Use solo números para los campos monetarios.");
+        } catch (Exception e) {
+            System.err.println("❌ Ocurrió un error inesperado al procesar la solicitud: " + e.getMessage());
+        }
+    }
+
+    // Método para leer por ID
+    private static void handleRead(String entityName, String id) {
+        Optional<?> result = Optional.empty();
+        
+        switch (entityName) {
+            case "Account":
+                result = accountService.findById(id);
+                break;
+            case "Balance":
+                // Balance requiere ID compuesto (ej: ACC001-2024-07-11)
+                result = balanceService.findById(id); 
+                break;
+            case "Loans":
+                result = loansService.findById(id);
+                break;
+            case "Cards":
+                result = cardService.findById(id);
+                break;
+        }
+
+        result.ifPresentOrElse(
+            item -> System.out.println("Encontrado: " + item),
+            () -> System.out.println(entityName + " con ID=" + id + " no encontrado.")
+        );
+    }
+
+    // Método para listar todos
+    private static void handleListAll(String entityName) {
+        List<?> list = List.of();
+        
+        switch (entityName) {
+            case "Account":
+                list = accountService.findAll();
+                break;
+            case "Balance":
+                list = balanceService.findAll();
+                break;
+            case "Loans":
+                list = loansService.findAll();
+                break;
+            case "Cards":
+                list = cardService.findAll();
+                break;
+        }
+
+        if (list.isEmpty()) {
+            System.out.println("No hay registros de " + entityName + ".");
+        } else {
+            list.forEach(System.out::println);
+        }
+    }
+
+    // Método para eliminar
+    private static void handleDelete(String entityName, String id) {
+        boolean deleted = false;
+        
+        switch (entityName) {
+            case "Account":
+                deleted = accountService.deleteById(id);
+                break;
+            case "Balance":
+                deleted = balanceService.deleteById(id);
+                break;
+            case "Loans":
+                deleted = loansService.deleteById(id);
+                break;
+            case "Cards":
+                deleted = cardService.deleteById(id);
+                break;
+        }
+
+        if (deleted) {
+            System.out.println("✅ " + entityName + " con ID=" + id + " eliminado correctamente.");
+        } else {
+            System.out.println("❌ Error: " + entityName + " con ID=" + id + " no encontrado o no se pudo eliminar.");
+        }
+    }
+    
     private static void printCrudMenu(String entityName) {
         System.out.println("\n--- " + entityName + " CRUD ---");
         System.out.println("1. Create");

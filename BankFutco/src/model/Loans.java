@@ -3,21 +3,19 @@ package model;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
-public class Loans{
+public class Loans {
 
-    // Atributos
-    private String loanId; // Clave para la búsqueda
+    private String loanId;
     private LocalDate date;
-    private String type; // e.g. "Home", "Vehicle", "Personal"
+    private String type; 
     private BigDecimal totalLoan;
     private BigDecimal amountPaid;
     private BigDecimal outstandingAmt;
 
-    // Constructor sin argumentos
     public Loans (){
     }
 
-    // CONSTRUCTOR COMPLETO (¡CORREGIDO para incluir loanId!)
+    // CONSTRUCTOR CORREGIDO
     public Loans(String loanId, LocalDate date, String type, BigDecimal totalLoan, BigDecimal amountPaid, BigDecimal outstandingAmt) {
         this.loanId = loanId;
         this.date = date;
@@ -27,56 +25,19 @@ public class Loans{
         this.outstandingAmt = outstandingAmt;
     }
 
-
     // Getters y Setters
-    
-    public String getLoanId() {
-        return loanId;
-    }
-
-    public void setLoanId(String loanId) {
-        this.loanId = loanId;
-    }
-    
-    public LocalDate getDate() {
-        return date;
-    }
-    
-    public void setDate(LocalDate date) {
-        this.date = date;
-    }
-    
-    public String getType() {
-        return type;
-    }
-    
-    public void setType(String type) {
-        this.type = type;
-    }
-    
-    public BigDecimal getTotalLoan() {
-        return totalLoan;
-    }
-    
-    public void setTotalLoan(BigDecimal totalLoan) {
-        this.totalLoan = totalLoan;
-    }
-    
-    public BigDecimal getAmountPaid() {
-        return amountPaid;
-    }
-    
-    public void setAmountPaid(BigDecimal amountPaid) {
-        this.amountPaid = amountPaid;
-    }
-    
-    public BigDecimal getOutstandingAmt() {
-        return outstandingAmt;
-    }
-    
-    public void setOutstandingAmt(BigDecimal outstandingAmt) {
-        this.outstandingAmt = outstandingAmt;
-    }
+    public String getLoanId() { return loanId; }
+    public void setLoanId(String loanId) { this.loanId = loanId; }
+    public LocalDate getDate() { return date; }
+    public void setDate(LocalDate date) { this.date = date; }
+    public String getType() { return type; }
+    public void setType(String type) { this.type = type; }
+    public BigDecimal getTotalLoan() { return totalLoan; }
+    public void setTotalLoan(BigDecimal totalLoan) { this.totalLoan = totalLoan; }
+    public BigDecimal getAmountPaid() { return amountPaid; }
+    public void setAmountPaid(BigDecimal amountPaid) { this.amountPaid = amountPaid; }
+    public BigDecimal getOutstandingAmt() { return outstandingAmt; }
+    public void setOutstandingAmt(BigDecimal outstandingAmt) { this.outstandingAmt = outstandingAmt; }
 
     @Override
     public String toString() {
