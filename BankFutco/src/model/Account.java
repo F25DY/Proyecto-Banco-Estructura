@@ -8,6 +8,7 @@ public class Account {
     private String mobileNumber;
     private String accountType;
     private String address;
+    public Account getName;
 
     public Account() {
     }
