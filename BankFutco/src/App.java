@@ -76,10 +76,18 @@ public class App {
             String opt = sc.nextLine().trim();
             switch (opt) {
                 case "1":
-                    System.out.println("[" + entityName + "] Crear - placeholder (pedir datos e invocar servicio)");
-                    //Deben tomar los datos por consola, usar Scanner
-                    Account account = new Account("ACC010", "Johanny Valencia", "johanny.valencia@example.com", "3000000001", "Savings", "Calle 20 de Turbaco-Bolivar"); 
-                    accountService.save(account); 
+                    
+                    System.out.println("Ingrese los siguientes datos separados por espacios: número de la cuenta, nombre, email, celular, tipo de cuenta y dirección");
+                    String entrada= sc.nextLine();
+                    String [] partes= entrada.split(" ");
+
+                    Account account= new Account(partes[0], partes[1], partes[2], partes[3], partes[4], partes[5]);
+
+                    accountService.save(account);
+                    System.out.println("Cuenta creada");
+                    
+                    /*Account account = new Account("ACC010", "Johanny Valencia", "johanny.valencia@example.com", "3000000001", "Savings", "Calle 20 de Turbaco-Bolivar"); 
+                    accountService.save(account); */
                     break;
                 case "2":
                     System.out.print("[" + entityName + "] Leer por id - ingrese id: ");
