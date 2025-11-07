@@ -18,34 +18,34 @@ public class LoansRepository {
     private void initData() {
         // Crear préstamos de ejemplo y asignar loanId para poder identificarlos
         Loans l1 = new Loans(
+            "LN001",
             LocalDate.of(2025, 10, 5),
             "Home",
             new BigDecimal("50000000"),
             new BigDecimal("20000000"),
             new BigDecimal("30000000")
         );
-        l1.setLoanId("LN001");
         storageLoans.add(l1);
 
         // Agregando más préstamos de ejemplo con diferentes tipos y montos
         Loans l2 = new Loans(
+            "LN002",
             LocalDate.now(),
             "Vehicle",
             new BigDecimal("25000000"),
             new BigDecimal("5000000"),
             new BigDecimal("20000000")
         );
-        l2.setLoanId("LN002");
         storageLoans.add(l2);
 
         Loans l3 = new Loans(
+            "LN003",
             LocalDate.now(),
             "Personal",
             new BigDecimal("10000000"),
             new BigDecimal("2000000"),
             new BigDecimal("8000000")
         );
-        l3.setLoanId("LN003");
         storageLoans.add(l3);
     }
 

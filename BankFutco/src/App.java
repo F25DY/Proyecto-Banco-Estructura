@@ -1,11 +1,16 @@
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.Optional;
 import java.util.Scanner;
 
 import model.Account;
+import model.Balance;
 import services.AccountService;
+import services.BalanceService;
 
 public class App {
     private static AccountService accountService=new AccountService();
+    private static BalanceService balanceService = new BalanceService();
     public static void main(String[] args) throws Exception {
         ////accountService.findAll().stream().forEach(a-> System.out.println(a));
         //accountService.findAll().stream().forEach(System.out::println);
@@ -76,15 +81,45 @@ public class App {
             String opt = sc.nextLine().trim();
             switch (opt) {
                 case "1":
+                    if ("Account".equals(entityName)) {
+                        System.out.println("Ingrese los siguientes datos separados por espacios: número de la cuenta, nombre, email, celular, tipo de cuenta y dirección");
+                        String entrada = sc.nextLine();
+                        String[] partes = entrada.split(" ");
+                        if (partes.length != 6) {
+                            System.out.println("Entrada inválida. Se requieren 6 valores separados por espacios.");
+                        } else {
+                            Account account = new Account(partes[0], partes[1], partes[2], partes[3], partes[4], partes[5]);
+                            accountService.save(account);
+                            System.out.println("Cuenta creada");
+                        }
+                    }
+
+                    if ("Balance".equals(entityName)) {
+                        System.out.println("Ingrese los siguientes datos separados por espacios: fecha(YYYY-MM-DD) número_de_cuenta descripción cashIn cashOut closingBalance");
+                        String entrada = sc.nextLine();
+                        String[] partes = entrada.split(" ");
+                        if (partes.length != 6) {
+                            System.out.println("Entrada inválida. Se requieren 6 valores separados por espacios.");
+                        } else {
+                            try {
+                                String fechaStr = partes[0].trim();
+                                String accountNumber = partes[1].trim();
+                                String descripcion = partes[2].trim();
+                                java.time.LocalDate fecha = LocalDate.parse(fechaStr);
+                                java.math.BigDecimal cashIn = new BigDecimal(partes[3].trim());
+                                java.math.BigDecimal cashOut = new BigDecimal(partes[4].trim());
+                                java.math.BigDecimal closing = new BigDecimal(partes[5].trim());
+
+                                Balance balance = new Balance(accountNumber, fecha, descripcion, cashIn, cashOut, closing);
+
+                                balanceService.save(balance);
+                                System.out.println("Balance creado");
+                            } catch (Exception ex) {
+                                System.out.println("Error al crear Balance: " + ex.getMessage());
+                            }
+                        }
+                    }
                     
-                    System.out.println("Ingrese los siguientes datos separados por espacios: número de la cuenta, nombre, email, celular, tipo de cuenta y dirección");
-                    String entrada= sc.nextLine();
-                    String [] partes= entrada.split(" ");
-
-                    Account account= new Account(partes[0], partes[1], partes[2], partes[3], partes[4], partes[5]);
-
-                    accountService.save(account);
-                    System.out.println("Cuenta creada");
                     
                     /*Account account = new Account("ACC010", "Johanny Valencia", "johanny.valencia@example.com", "3000000001", "Savings", "Calle 20 de Turbaco-Bolivar"); 
                     accountService.save(account); */
