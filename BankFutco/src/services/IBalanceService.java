@@ -11,3 +11,4 @@ public interface IBalanceService {
 	List<Balance> findAll();
 	boolean deleteById(String id);
 }
+
