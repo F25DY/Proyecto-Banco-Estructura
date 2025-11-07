@@ -21,7 +21,7 @@ public class Cards {
     public Cards() {
     }
 
-    // Getters y Setters (NUEVO FORMATO LIMPIO)
+    
     public String getCardNumber() { 
         return cardNumber; 
     }

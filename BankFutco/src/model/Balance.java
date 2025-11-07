@@ -5,7 +5,7 @@ import java.time.LocalDate;
 
 public class Balance {
     
-    // ATRIBUTO CLAVE COMPUESTA
+    
     private String accountNumber; 
 
 	private LocalDate date;
@@ -14,11 +14,11 @@ public class Balance {
 	private BigDecimal cashOut;
 	private BigDecimal closingBalance;
 
-    // Constructor vacío
+    
     public Balance() {
     }
 
-    // Constructor COMPLETO
+   
     public Balance(String accountNumber, LocalDate date, String description, BigDecimal cashIn, BigDecimal cashOut, BigDecimal closingBalance) {
         this.accountNumber = accountNumber;
         this.date = date;
@@ -28,7 +28,7 @@ public class Balance {
         this.closingBalance = closingBalance;
     }
 
-    // Getters y Setters (NUEVO FORMATO LIMPIO)
+    
     public String getAccountNumber() { 
         return accountNumber; 
     }

@@ -6,7 +6,7 @@ import model.Loans;
 
 public interface ILoansService {
 	Loans save(Loans loan);
-	Optional<Loans> findById(String id); // id = date.toString()
+	Optional<Loans> findById(String id); 
 	List<Loans> findAll();
 	boolean deleteById(String id);
 }

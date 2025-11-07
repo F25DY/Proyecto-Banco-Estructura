@@ -23,29 +23,42 @@ public class BalanceService implements IBalanceService {
     @Override
     public Optional<Balance> findById(String id) {
         if (id == null) return Optional.empty();
-        
-        // El ID debe venir como "Cuenta-Fecha" (ej: ACC001-2024-07-11)
-        String trimmedId = id.trim();
-        String[] parts = trimmedId.split("-");
+        String trimmed = id.trim();
+        int idx = trimmed.indexOf('-'); // separar en la primera ocurrencia
+        if (idx <= 0) return Optional.empty();
 
-        // Error 1: No busca por ID si no tiene el formato compuesto
-        if (parts.length != 2) {
-            // Se devuelve vacío si no tiene el formato esperado
-            return Optional.empty(); 
-        }
-        
+        String accountNumber = trimmed.substring(0, idx).trim().toUpperCase();
+        String datePart = trimmed.substring(idx + 1).trim();
+
+        // intentar parse ISO y dd-MM-yyyy
+        DateTimeParseException lastEx = null;
         try {
-            String accountNumber = parts[0].trim();
-            // Error 2: La fecha se parsea incorrectamente
-            // Se usa trim() para asegurar que no hay espacios inesperados
-            LocalDate date = LocalDate.parse(parts[1].trim()); 
-            
+            LocalDate date = LocalDate.parse(datePart);
             return balanceRepository.findByIds(accountNumber, date);
-            
-        } catch (DateTimeParseException e) {
-            // El formato YYYY-MM-DD es incorrecto
-            return Optional.empty();
+        } catch (DateTimeParseException e1) {
+            lastEx = e1;
+            try {
+                java.time.format.DateTimeFormatter f = java.time.format.DateTimeFormatter.ofPattern("dd-MM-yyyy");
+                LocalDate date2 = LocalDate.parse(datePart, f);
+                return balanceRepository.findByIds(accountNumber, date2);
+            } catch (DateTimeParseException e2) {
+                lastEx = e2;
+            }
         }
+
+        // fallback: buscar comparando la parte de fecha con toString() / dd-MM-yyyy en todos los registros
+        for (Balance b : balanceRepository.findAll()) {
+            if (b.getAccountNumber() == null) continue;
+            if (!accountNumber.equalsIgnoreCase(b.getAccountNumber().trim())) continue;
+            String iso = b.getDate().toString(); // yyyy-MM-dd
+            String ddmmyyyy = b.getDate().format(java.time.format.DateTimeFormatter.ofPattern("dd-MM-yyyy"));
+            if (datePart.equals(iso) || datePart.equals(ddmmyyyy)) {
+                return Optional.of(b);
+            }
+        }
+
+        // no se encontró
+        return Optional.empty();
     }
 
     @Override
@@ -56,23 +69,35 @@ public class BalanceService implements IBalanceService {
     @Override
     public boolean deleteById(String id) {
         if (id == null) return false;
-        
-        // El ID debe venir como "Cuenta-Fecha"
-        String trimmedId = id.trim();
-        String[] parts = trimmedId.split("-");
+        String trimmed = id.trim();
+        int idx = trimmed.indexOf('-');
+        if (idx <= 0) return false;
 
-        if (parts.length != 2) {
-            return false;
-        }
-        
+        String accountNumber = trimmed.substring(0, idx).trim().toUpperCase();
+        String datePart = trimmed.substring(idx + 1).trim();
+
         try {
-            String accountNumber = parts[0].trim();
-            LocalDate date = LocalDate.parse(parts[1].trim()); 
-            
+            LocalDate date = LocalDate.parse(datePart);
             return balanceRepository.deleteByIds(accountNumber, date);
-            
-        } catch (DateTimeParseException e) {
-            return false;
+        } catch (DateTimeParseException e1) {
+            try {
+                java.time.format.DateTimeFormatter f = java.time.format.DateTimeFormatter.ofPattern("dd-MM-yyyy");
+                LocalDate date2 = LocalDate.parse(datePart, f);
+                return balanceRepository.deleteByIds(accountNumber, date2);
+            } catch (DateTimeParseException e2) {
+                // fallback: eliminar comparando strings de fecha
+                List<Balance> all = balanceRepository.findAll();
+                for (Balance b : all) {
+                    if (b.getAccountNumber() == null) continue;
+                    if (!accountNumber.equalsIgnoreCase(b.getAccountNumber().trim())) continue;
+                    String iso = b.getDate().toString();
+                    String ddmmyyyy = b.getDate().format(java.time.format.DateTimeFormatter.ofPattern("dd-MM-yyyy"));
+                    if (datePart.equals(iso) || datePart.equals(ddmmyyyy)) {
+                        return balanceRepository.deleteByIds(b.getAccountNumber(), b.getDate());
+                    }
+                }
+                return false;
+            }
         }
     }
 }

@@ -13,11 +13,11 @@ import services.BalanceService;
 import services.CardService;
 import services.LoansServices;
 
-// Si tu archivo App.java NO está en un paquete, COMENTA O BORRA la línea "package app;".
+
 
 public class App {
     
-    // Inicialización de TODOS los servicios
+    
     private static final AccountService accountService = new AccountService();
     private static final BalanceService balanceService = new BalanceService();
     private static final LoansServices loansService = new LoansServices();
@@ -71,31 +71,33 @@ public class App {
 
             switch (opt) {
                 case "1":
-                    
-                    System.out.println("Ingrese los siguientes datos separados por espacios: número de la cuenta, nombre, email, celular, tipo de cuenta y dirección");
-                    String entrada= sc.nextLine();
-                    String [] partes= entrada.split(" ");
-
-                    Account account= new Account(partes[0], partes[1], partes[2], partes[3], partes[4], partes[5]);
-
-                    accountService.save(account);
-                    System.out.println("Cuenta creada");
-                    
-                    /*Account account = new Account("ACC010", "Johanny Valencia", "johanny.valencia@example.com", "3000000001", "Savings", "Calle 20 de Turbaco-Bolivar"); 
-                    accountService.save(account); */
-
+                    if ("Account".equals(entityName)) {
+                        System.out.println("Ingrese los siguientes datos separados por espacios: número de la cuenta, nombre, email, celular, tipo de cuenta y dirección");
+                        String entrada = sc.nextLine();
+                        String[] partes = entrada.split(" ");
+                        if (partes.length < 6) {
+                            System.out.println("Error: datos incompletos. Debe ingresar 6 campos separados por espacios.");
+                        } else {
+                            Account account = new Account(partes[0].trim(), partes[1].trim(), partes[2].trim(), partes[3].trim(), partes[4].trim(), partes[5].trim());
+                            accountService.save(account);
+                            System.out.println("Cuenta creada");
+                        }
+                    } else {
+                        // Para Balance, Loans y Cards usa el flujo genérico de creación
+                        handleCreateOrUpdate(sc, entityName, "Create");
+                    }
                     break;
-                case "2": // READ BY ID
+                case "2": 
                     System.out.print("[" + entityName + "] Leer por id - Ingrese ID: ");
                     String idRead = sc.nextLine().trim();
                     handleRead(entityName, idRead);
                     break;
-                case "3": // LIST ALL
+                case "3": 
                     System.out.println("[" + entityName + "] Listar todos");
                     handleListAll(entityName);
                     break;
-                case "4": // UPDATE
-                    // ¡Recordatorio CRÍTICO para Balance!
+                case "4": 
+                    
                     if (entityName.equals("Balance")) {
                         System.out.print("[" + entityName + "] Actualizar - Ingrese ID compuesto (ej: ACC001-2024-07-11): ");
                     } else {
@@ -104,7 +106,7 @@ public class App {
                     String idUp = sc.nextLine().trim();
                     handleCreateOrUpdate(sc, entityName, "Update", idUp);
                     break;
-                case "5": // DELETE
+                case "5": 
                     if (entityName.equals("Balance")) {
                         System.out.print("[" + entityName + "] Eliminar - Ingrese ID compuesto (ej: ACC001-2024-07-11): ");
                     } else {
@@ -122,7 +124,7 @@ public class App {
         }
     }
 
-    // --- MÉTODOS AUXILIARES CON ENTRADA DE USUARIO (Scanner) ---
+    
     
     private static void handleCreateOrUpdate(Scanner sc, String entityName, String action, String... id) {
         String targetId = id.length > 0 ? id[0] : null; 
@@ -154,7 +156,7 @@ public class App {
 
                     Account account = new Account(accId, name, email, phone, type, address);
                     accountService.save(account);
-                    System.out.println("✅ Cuenta " + accId + " guardada/actualizada con éxito.");
+                    System.out.println(" Cuenta " + accId + " guardada/actualizada con éxito.");
                     break;
 
                 case "Balance":
@@ -167,18 +169,13 @@ public class App {
                         System.out.print("Ingrese Fecha del registro (YYYY-MM-DD): ");
                         balDate = LocalDate.parse(sc.nextLine().trim());
                     } else { 
-                        // VALIDACIÓN ROBUSTA DEL ID COMPUESTO PARA ACTUALIZAR
                         if (targetId == null) throw new IllegalArgumentException("ID compuesto requerido para actualizar Balance (ej: ACC001-2024-07-11).");
-                        
-                        String trimmedTargetId = targetId.trim(); // Limpiamos el ID del usuario
-                        String[] parts = trimmedTargetId.split("-");
-                        
-                        if (parts.length != 2) throw new IllegalArgumentException("El formato del ID de Balance debe ser Cuenta-Fecha (ej: ACC001-2024-07-11).");
-                        
-                        balAccId = parts[0].trim();
-                        balDate = LocalDate.parse(parts[1].trim()); // Limpiamos y parseamos la fecha del ID
-                        
-                        // Verificamos si el registro existe antes de pedir nuevos datos
+                        String trimmedTargetId = targetId.trim();
+                        int idx = trimmedTargetId.indexOf('-'); // usar indexOf en vez de split
+                        if (idx <= 0) throw new IllegalArgumentException("El formato del ID de Balance debe ser Cuenta-Fecha (ej: ACC001-2024-07-11).");
+                        balAccId = trimmedTargetId.substring(0, idx).trim();
+                        String datePart = trimmedTargetId.substring(idx + 1).trim();
+                        balDate = LocalDate.parse(datePart);
                         if (balanceService.findById(trimmedTargetId).isEmpty()) {
                              System.out.println("Error: Balance con ID " + trimmedTargetId + " no encontrado para actualizar.");
                              return;
@@ -196,7 +193,7 @@ public class App {
 
                     Balance newBalance = new Balance(balAccId, balDate, description, cashIn, cashOut, closingBalance);
                     balanceService.save(newBalance);
-                    System.out.println("✅ Balance para " + balAccId + " en " + balDate + " guardado/actualizado.");
+                    System.out.println(" Balance para " + balAccId + " en " + balDate + " guardado/actualizado.");
                     break;
                 
                 case "Loans":
@@ -225,7 +222,7 @@ public class App {
 
                     Loans newLoan = new Loans(loanId, loanDate, loanType, totalLoan, amountPaid, outstandingAmt);
                     loansService.save(newLoan);
-                    System.out.println("✅ Préstamo " + loanId + " guardado/actualizado.");
+                    System.out.println(" Préstamo " + loanId + " guardado/actualizado.");
                     break;
                 
                 case "Cards":
@@ -252,33 +249,32 @@ public class App {
 
                     Cards newCard = new Cards(cardId, cardType, totalLimit, amountUsed, available);
                     cardService.save(newCard);
-                    System.out.println("✅ Tarjeta " + cardId + " guardada/actualizada.");
+                    System.out.println(" Tarjeta " + cardId + " guardada/actualizada.");
                     break;
             }
         } catch (DateTimeParseException e) {
-            // Este catch maneja las fechas que ingresa el usuario dentro del CRUD
-            System.err.println("❌ Error: Formato de fecha inválido. Use YYYY-MM-DD (ej: 2024-07-11).");
-            // Limpiar el buffer del scanner
+            
+            System.err.println("Error: Formato de fecha inválido. Use YYYY-MM-DD (ej: 2024-07-11).");
+            
             if (sc.hasNextLine()) {
                 sc.nextLine(); 
             }
         } catch (NumberFormatException e) {
-            System.err.println("❌ Error: Monto inválido. Use solo números (ej: 1000.00) para los campos monetarios.");
-            // Limpiar el buffer del scanner
+            System.err.println(" Error: Monto inválido. Use solo números (ej: 1000.00) para los campos monetarios.");
+            
             if (sc.hasNextLine()) {
                 sc.nextLine(); 
             }
         } catch (IllegalArgumentException e) {
-            System.err.println("❌ Error en la lógica: " + e.getMessage());
+            System.err.println(" Error en la lógica: " + e.getMessage());
         } catch (Exception e) {
-            System.err.println("❌ Ocurrió un error inesperado al procesar la solicitud: " + e.getMessage());
+            System.err.println(" Ocurrió un error inesperado al procesar la solicitud: " + e.getMessage());
         }
     }
 
     private static void handleRead(String entityName, String id) {
         Optional<?> result = Optional.empty();
-        
-        // El ID siempre se limpia aquí antes de pasarlo al Service
+
         String cleanedId = id.trim();
 
         switch (entityName) {
@@ -286,8 +282,7 @@ public class App {
                 result = accountService.findById(cleanedId);
                 break;
             case "Balance":
-                // BalanceService.findById() ahora valida y descompone el ID compuesto
-                result = balanceService.findById(cleanedId); 
+                result = balanceService.findById(cleanedId);
                 break;
             case "Loans":
                 result = loansService.findById(cleanedId);
@@ -300,8 +295,17 @@ public class App {
         result.ifPresentOrElse(
             item -> System.out.println("Encontrado: " + item),
             () -> {
-                if (entityName.equals("Balance") && !cleanedId.contains("-")) {
-                    System.out.println("Error: Para Balance, el ID debe ser compuesto (Cuenta-Fecha, ej: ACC001-2024-07-11).");
+                if ("Balance".equals(entityName)) {
+                    if (!cleanedId.contains("-")) {
+                        System.out.println("Error: Para Balance, el ID debe ser compuesto (Cuenta-Fecha, ej: ACC001-2024-07-11).");
+                    } else {
+                        System.out.println(entityName + " con ID=" + cleanedId + " no encontrado.");
+                        System.out.println("IDs disponibles:");
+                        balanceService.findAll().stream()
+                            .map(b -> b.getAccountNumber() + "-" + b.getDate())
+                            .distinct()
+                            .forEach(System.out::println);
+                    }
                 } else {
                     System.out.println(entityName + " con ID=" + cleanedId + " no encontrado.");
                 }
@@ -357,9 +361,9 @@ public class App {
             System.out.println("✅ " + entityName + " con ID=" + cleanedId + " eliminado correctamente.");
         } else {
             if (entityName.equals("Balance") && !cleanedId.contains("-")) {
-                System.out.println("❌ Error: Para Balance, el ID debe ser compuesto (Cuenta-Fecha, ej: ACC001-2024-07-11).");
+                System.out.println(" Error: Para Balance, el ID debe ser compuesto (Cuenta-Fecha, ej: ACC001-2024-07-11).");
             } else {
-                System.out.println("❌ Error: " + entityName + " con ID=" + cleanedId + " no encontrado o no se pudo eliminar.");
+                System.out.println(" Error: " + entityName + " con ID=" + cleanedId + " no encontrado o no se pudo eliminar.");
             }
         }
     }

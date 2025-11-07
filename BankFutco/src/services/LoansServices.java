@@ -2,9 +2,8 @@ package services;
 
 import java.util.List;
 import java.util.Optional;
-
 import model.Loans;
-import repositories.LoansRepository; // Debe existir en el paquete repositories
+import repositories.LoansRepository; 
 
 public class LoansServices implements ILoansService {
 
@@ -20,7 +19,7 @@ public class LoansServices implements ILoansService {
     }
 
     @Override
-    // Usamos el 'id' (que será el loanId) para la búsqueda
+    
     public Optional<Loans> findById(String id) { 
         return loansRepository.findById(id);
     }

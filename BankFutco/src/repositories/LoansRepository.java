@@ -16,7 +16,7 @@ public class LoansRepository {
     }
 
     private void initData() {
-        // Formato: new Loans(loanId, date, type, totalLoan, amountPaid, outstandingAmt)
+        
         
         storage.add(new Loans("L001", LocalDate.of(2023, 1, 15), "Home", new BigDecimal("150000.00"), new BigDecimal("10000.00"), new BigDecimal("140000.00")));
         storage.add(new Loans("L002", LocalDate.of(2023, 5, 20), "Vehicle", new BigDecimal("35000.00"), new BigDecimal("5000.00"), new BigDecimal("30000.00")));
@@ -24,12 +24,12 @@ public class LoansRepository {
         storage.add(new Loans("L004", LocalDate.of(2024, 7, 10), "Home", new BigDecimal("250000.00"), new BigDecimal("0.00"), new BigDecimal("250000.00")));
     }
 
-    // Simula creación y actualización
+    
     public Loans save(Loans loan) {
         if (loan == null || loan.getLoanId() == null) {
             throw new IllegalArgumentException("Loan o loanId no puede ser null");
         }
-        // Elimina el registro anterior si existe (actualización)
+        
         storage.removeIf(l -> l.getLoanId().equals(loan.getLoanId()));
         storage.add(loan);
         return loan;

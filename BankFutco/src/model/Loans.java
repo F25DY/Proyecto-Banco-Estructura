@@ -15,7 +15,7 @@ public class Loans {
     public Loans (){
     }
 
-    // CONSTRUCTOR COMPLETO
+   
     public Loans(String loanId, LocalDate date, String type, BigDecimal totalLoan, BigDecimal amountPaid, BigDecimal outstandingAmt) {
         this.loanId = loanId;
         this.date = date;
@@ -25,7 +25,7 @@ public class Loans {
         this.outstandingAmt = outstandingAmt;
     }
 
-    // Getters y Setters (NUEVO FORMATO LIMPIO)
+    
     public String getLoanId() { 
         return loanId; 
     }
