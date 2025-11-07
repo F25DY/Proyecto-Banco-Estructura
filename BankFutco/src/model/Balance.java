@@ -5,19 +5,21 @@ import java.time.LocalDate;
 
 public class Balance {
 // Atributos
+    private String accountNumber; // ¡CAMPO AÑADIDO!
 	private LocalDate date;
 	private String description;
 	private BigDecimal cashIn;
 	private BigDecimal cashOut;
 	private BigDecimal closingBalance;
 
-// Constructor
-
-     public Balance() {
+// Constructor sin argumentos
+	public Balance() {
 	}
 	
-    public Balance(LocalDate date, String description, BigDecimal cashIn, BigDecimal cashOut,
+// Constructor COMPLETO 
+	public Balance(String accountNumber, LocalDate date, String description, BigDecimal cashIn, BigDecimal cashOut,
 			BigDecimal closingBalance) {
+        this.accountNumber = accountNumber;
 		this.date = date;
 		this.description = description;
 		this.cashIn = cashIn;
@@ -26,7 +28,13 @@ public class Balance {
 	}
 
 // Getters y Setters
-
+    public String getAccountNumber() { // ¡GETTER AÑADIDO!
+        return accountNumber;
+    }
+    public void setAccountNumber(String accountNumber) {
+        this.accountNumber = accountNumber;
+    }
+    
 	public LocalDate getDate() {
 		return date;
 	}
@@ -45,11 +53,24 @@ public class Balance {
 	public void setCashIn(BigDecimal cashIn) {
 		this.cashIn = cashIn;
 	}
-
+    
+    // Getters y Setters adicionales (completando la clase original)
+    public BigDecimal getCashOut() {
+        return cashOut;
+    }
+    public void setCashOut(BigDecimal cashOut) {
+        this.cashOut = cashOut;
+    }
+    public BigDecimal getClosingBalance() {
+        return closingBalance;
+    }
+    public void setClosingBalance(BigDecimal closingBalance) {
+        this.closingBalance = closingBalance;
+    }
+    
 	@Override
 	public String toString() {
-		return "Balance [date=" + date + ", description=" + description + ", cashIn=" + cashIn + ", cashOut=" + cashOut
+		return "Balance [accountNumber=" + accountNumber + ", date=" + date + ", description=" + description + ", cashIn=" + cashIn + ", cashOut=" + cashOut
 				+ ", closingBalance=" + closingBalance + "]";
 	}
-
 }
