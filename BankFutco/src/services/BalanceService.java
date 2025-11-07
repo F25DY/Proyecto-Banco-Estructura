@@ -24,13 +24,13 @@ public class BalanceService implements IBalanceService {
     public Optional<Balance> findById(String id) {
         if (id == null) return Optional.empty();
         String trimmed = id.trim();
-        int idx = trimmed.indexOf('-'); // separar en la primera ocurrencia
+        int idx = trimmed.indexOf('-'); 
         if (idx <= 0) return Optional.empty();
 
         String accountNumber = trimmed.substring(0, idx).trim().toUpperCase();
         String datePart = trimmed.substring(idx + 1).trim();
 
-        // intentar parse ISO y dd-MM-yyyy
+        
         DateTimeParseException lastEx = null;
         try {
             LocalDate date = LocalDate.parse(datePart);
