@@ -1,80 +1,77 @@
 package services;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Optional;
-import java.time.LocalDate;
-import java.time.format.DateTimeParseException; 
-
 import model.Balance;
-import repositories.BalancesRepository; // ¡Importante! Asegúrate que la clase se llame BalancesRepository
+import repositories.BalancesRepository; 
 
-// La clase implementa el contrato definido en IBalanceService
 public class BalanceService implements IBalanceService {
 
-    // Instancia del repositorio (para acceder a los datos)
     private final BalancesRepository balanceRepository;
 
     public BalanceService() {
         this.balanceRepository = new BalancesRepository(); 
     }
 
-    // --- MÉTODOS DELEGADOS AL REPOSITORIO ---
-
     @Override
     public Balance save(Balance balance) {
-        // Delega al repositorio la lógica de guardar/actualizar
         return balanceRepository.save(balance);
     }
 
     @Override
     public Optional<Balance> findById(String id) {
-        // SOLUCIÓN PARA LA CLAVE COMPUESTA: Descomponer el String (ej: "ACC001-2024-07-11")
+        if (id == null) return Optional.empty();
+        
+        // El ID debe venir como "Cuenta-Fecha" (ej: ACC001-2024-07-11)
+        String trimmedId = id.trim();
+        String[] parts = trimmedId.split("-");
+
+        // Error 1: No busca por ID si no tiene el formato compuesto
+        if (parts.length != 2) {
+            // Se devuelve vacío si no tiene el formato esperado
+            return Optional.empty(); 
+        }
+        
         try {
-            // Se usa split("-") para dividir el ID en número de cuenta y fecha
-            String[] parts = id.split("-");
-            if (parts.length != 2) {
-                // Si no hay dos partes separadas por '-', el formato es incorrecto.
-                System.err.println("Formato de ID inválido. Debe ser: Cuenta-Fecha (ej: ACC001-2024-07-11)");
-                return Optional.empty(); 
-            }
+            String accountNumber = parts[0].trim();
+            // Error 2: La fecha se parsea incorrectamente
+            // Se usa trim() para asegurar que no hay espacios inesperados
+            LocalDate date = LocalDate.parse(parts[1].trim()); 
             
-            String accountNumber = parts[0];
-            LocalDate date = LocalDate.parse(parts[1]); 
-            
-            // Llama al método findByIds del repositorio
             return balanceRepository.findByIds(accountNumber, date);
             
         } catch (DateTimeParseException e) {
-            // Captura el error si la fecha (parts[1]) no tiene el formato YYYY-MM-DD
-            System.err.println("Error de formato de fecha en el ID: " + id);
+            // El formato YYYY-MM-DD es incorrecto
             return Optional.empty();
         }
     }
 
     @Override
     public List<Balance> findAll() {
-        // Delega la obtención de todos los registros al repositorio
         return balanceRepository.findAll();
     }
 
     @Override
     public boolean deleteById(String id) {
-        // SOLUCIÓN PARA LA CLAVE COMPUESTA: Descomponer el String para eliminar el registro
+        if (id == null) return false;
+        
+        // El ID debe venir como "Cuenta-Fecha"
+        String trimmedId = id.trim();
+        String[] parts = trimmedId.split("-");
+
+        if (parts.length != 2) {
+            return false;
+        }
+        
         try {
-            String[] parts = id.split("-");
-            if (parts.length != 2) {
-                System.err.println("Formato de ID inválido para eliminar. Debe ser: Cuenta-Fecha.");
-                return false; 
-            }
+            String accountNumber = parts[0].trim();
+            LocalDate date = LocalDate.parse(parts[1].trim()); 
             
-            String accountNumber = parts[0];
-            LocalDate date = LocalDate.parse(parts[1]); 
-            
-            // Llama al método deleteByIds del repositorio
             return balanceRepository.deleteByIds(accountNumber, date);
             
         } catch (DateTimeParseException e) {
-            System.err.println("Error de formato de fecha al intentar eliminar: " + id);
             return false;
         }
     }

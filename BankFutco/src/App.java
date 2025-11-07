@@ -13,8 +13,7 @@ import services.BalanceService;
 import services.CardService;
 import services.LoansServices;
 
-// Si tu archivo App.java NO está en una carpeta de paquete (ej: src/App.java), 
-// debes ELIMINAR O COMENTAR la línea "package app;".
+// Si tu archivo App.java NO está en un paquete, COMENTA O BORRA la línea "package app;".
 
 public class App {
     
@@ -85,12 +84,21 @@ public class App {
                     handleListAll(entityName);
                     break;
                 case "4": // UPDATE
-                    System.out.print("[" + entityName + "] Actualizar - Ingrese ID a actualizar: ");
+                    // ¡Recordatorio CRÍTICO para Balance!
+                    if (entityName.equals("Balance")) {
+                        System.out.print("[" + entityName + "] Actualizar - Ingrese ID compuesto (ej: ACC001-2024-07-11): ");
+                    } else {
+                        System.out.print("[" + entityName + "] Actualizar - Ingrese ID a actualizar: ");
+                    }
                     String idUp = sc.nextLine().trim();
                     handleCreateOrUpdate(sc, entityName, "Update", idUp);
                     break;
                 case "5": // DELETE
-                    System.out.print("[" + entityName + "] Eliminar - Ingrese ID a eliminar: ");
+                    if (entityName.equals("Balance")) {
+                        System.out.print("[" + entityName + "] Eliminar - Ingrese ID compuesto (ej: ACC001-2024-07-11): ");
+                    } else {
+                        System.out.print("[" + entityName + "] Eliminar - Ingrese ID a eliminar: ");
+                    }
                     String idDel = sc.nextLine().trim();
                     handleDelete(entityName, idDel);
                     break;
@@ -105,7 +113,6 @@ public class App {
 
     // --- MÉTODOS AUXILIARES CON ENTRADA DE USUARIO (Scanner) ---
     
-    // Método para crear y actualizar (usa save en el servicio)
     private static void handleCreateOrUpdate(Scanner sc, String entityName, String action, String... id) {
         String targetId = id.length > 0 ? id[0] : null; 
         
@@ -149,17 +156,29 @@ public class App {
                         System.out.print("Ingrese Fecha del registro (YYYY-MM-DD): ");
                         balDate = LocalDate.parse(sc.nextLine().trim());
                     } else { 
-                        if (targetId == null) throw new IllegalArgumentException("ID compuesto requerido para actualizar Balance.");
-                        String[] parts = targetId.split("-");
-                        balAccId = parts[0];
-                        balDate = LocalDate.parse(parts[1]);
+                        // VALIDACIÓN ROBUSTA DEL ID COMPUESTO PARA ACTUALIZAR
+                        if (targetId == null) throw new IllegalArgumentException("ID compuesto requerido para actualizar Balance (ej: ACC001-2024-07-11).");
+                        
+                        String trimmedTargetId = targetId.trim(); // Limpiamos el ID del usuario
+                        String[] parts = trimmedTargetId.split("-");
+                        
+                        if (parts.length != 2) throw new IllegalArgumentException("El formato del ID de Balance debe ser Cuenta-Fecha (ej: ACC001-2024-07-11).");
+                        
+                        balAccId = parts[0].trim();
+                        balDate = LocalDate.parse(parts[1].trim()); // Limpiamos y parseamos la fecha del ID
+                        
+                        // Verificamos si el registro existe antes de pedir nuevos datos
+                        if (balanceService.findById(trimmedTargetId).isEmpty()) {
+                             System.out.println("Error: Balance con ID " + trimmedTargetId + " no encontrado para actualizar.");
+                             return;
+                        }
                     }
 
                     System.out.print("Descripción: ");
                     String description = sc.nextLine();
-                    System.out.print("Entrada de Efectivo (Cash In): ");
+                    System.out.print("Entrada de Efectivo (Cash In, ej: 1000.00): ");
                     BigDecimal cashIn = new BigDecimal(sc.nextLine());
-                    System.out.print("Salida de Efectivo (Cash Out): ");
+                    System.out.print("Salida de Efectivo (Cash Out, ej: 50.00): ");
                     BigDecimal cashOut = new BigDecimal(sc.nextLine());
                     System.out.print("Saldo Final (Closing Balance): ");
                     BigDecimal closingBalance = new BigDecimal(sc.nextLine());
@@ -226,41 +245,59 @@ public class App {
                     break;
             }
         } catch (DateTimeParseException e) {
-            System.err.println("❌ Error: Formato de fecha inválido. Use YYYY-MM-DD.");
+            // Este catch maneja las fechas que ingresa el usuario dentro del CRUD
+            System.err.println("❌ Error: Formato de fecha inválido. Use YYYY-MM-DD (ej: 2024-07-11).");
+            // Limpiar el buffer del scanner
+            if (sc.hasNextLine()) {
+                sc.nextLine(); 
+            }
         } catch (NumberFormatException e) {
-            System.err.println("❌ Error: Monto inválido. Use solo números para los campos monetarios.");
+            System.err.println("❌ Error: Monto inválido. Use solo números (ej: 1000.00) para los campos monetarios.");
+            // Limpiar el buffer del scanner
+            if (sc.hasNextLine()) {
+                sc.nextLine(); 
+            }
+        } catch (IllegalArgumentException e) {
+            System.err.println("❌ Error en la lógica: " + e.getMessage());
         } catch (Exception e) {
             System.err.println("❌ Ocurrió un error inesperado al procesar la solicitud: " + e.getMessage());
         }
     }
 
-    // Método para leer por ID
     private static void handleRead(String entityName, String id) {
         Optional<?> result = Optional.empty();
         
+        // El ID siempre se limpia aquí antes de pasarlo al Service
+        String cleanedId = id.trim();
+
         switch (entityName) {
             case "Account":
-                result = accountService.findById(id);
+                result = accountService.findById(cleanedId);
                 break;
             case "Balance":
-                // Balance requiere ID compuesto (ej: ACC001-2024-07-11)
-                result = balanceService.findById(id); 
+                // BalanceService.findById() ahora valida y descompone el ID compuesto
+                result = balanceService.findById(cleanedId); 
                 break;
             case "Loans":
-                result = loansService.findById(id);
+                result = loansService.findById(cleanedId);
                 break;
             case "Cards":
-                result = cardService.findById(id);
+                result = cardService.findById(cleanedId);
                 break;
         }
 
         result.ifPresentOrElse(
             item -> System.out.println("Encontrado: " + item),
-            () -> System.out.println(entityName + " con ID=" + id + " no encontrado.")
+            () -> {
+                if (entityName.equals("Balance") && !cleanedId.contains("-")) {
+                    System.out.println("Error: Para Balance, el ID debe ser compuesto (Cuenta-Fecha, ej: ACC001-2024-07-11).");
+                } else {
+                    System.out.println(entityName + " con ID=" + cleanedId + " no encontrado.");
+                }
+            }
         );
     }
 
-    // Método para listar todos
     private static void handleListAll(String entityName) {
         List<?> list = List.of();
         
@@ -286,29 +323,33 @@ public class App {
         }
     }
 
-    // Método para eliminar
     private static void handleDelete(String entityName, String id) {
         boolean deleted = false;
+        String cleanedId = id.trim();
         
         switch (entityName) {
             case "Account":
-                deleted = accountService.deleteById(id);
+                deleted = accountService.deleteById(cleanedId);
                 break;
             case "Balance":
-                deleted = balanceService.deleteById(id);
+                deleted = balanceService.deleteById(cleanedId);
                 break;
             case "Loans":
-                deleted = loansService.deleteById(id);
+                deleted = loansService.deleteById(cleanedId);
                 break;
             case "Cards":
-                deleted = cardService.deleteById(id);
+                deleted = cardService.deleteById(cleanedId);
                 break;
         }
 
         if (deleted) {
-            System.out.println("✅ " + entityName + " con ID=" + id + " eliminado correctamente.");
+            System.out.println("✅ " + entityName + " con ID=" + cleanedId + " eliminado correctamente.");
         } else {
-            System.out.println("❌ Error: " + entityName + " con ID=" + id + " no encontrado o no se pudo eliminar.");
+            if (entityName.equals("Balance") && !cleanedId.contains("-")) {
+                System.out.println("❌ Error: Para Balance, el ID debe ser compuesto (Cuenta-Fecha, ej: ACC001-2024-07-11).");
+            } else {
+                System.out.println("❌ Error: " + entityName + " con ID=" + cleanedId + " no encontrado o no se pudo eliminar.");
+            }
         }
     }
     
