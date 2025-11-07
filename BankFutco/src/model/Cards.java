@@ -9,4 +9,68 @@ public class Cards {
 	private BigDecimal totalLimit;
 	private BigDecimal amountUsed;
 	private BigDecimal available;
+
+	// Constructor
+	public Cards() {
+	}
+
+
+	public Cards(String cardNumber, String type, BigDecimal totalLimit, BigDecimal amountUsed, BigDecimal available) {
+		this.cardNumber = cardNumber;
+		this.type = type;
+		this.totalLimit = totalLimit;
+		this.amountUsed = amountUsed;
+		this.available = available;
+	}
+
+	// Getters y Setters
+
+	public String getCardNumber() {
+		return cardNumber;
+	}
+
+	public void setCardNumber(String cardNumber) {
+		this.cardNumber = cardNumber;
+	}
+
+	public String getType() {
+		return type;
+	}
+
+	public void setType(String type) {
+		this.type = type;
+	}
+
+	public BigDecimal getTotalLimit() {
+		return totalLimit;
+	}
+
+	public void setTotalLimit(BigDecimal totalLimit) {
+		this.totalLimit = totalLimit;
+	}
+
+	public BigDecimal getAmountUsed() {
+		return amountUsed;
+	}
+
+	public void setAmountUsed(BigDecimal amountUsed) {
+		this.amountUsed = amountUsed;
+	}
+
+	public BigDecimal getAvailable() {
+		return available;
+	}
+
+	public void setAvailable(BigDecimal available) {
+		this.available = available;
+	}
+
+	@Override
+	public String toString() {
+		return "Cards [cardNumber=" + cardNumber + ", type=" + type + ", totalLimit=" + totalLimit + ", amountUsed="
+				+ amountUsed + ", available=" + available + "]";
+	}
+	
+	
+
 }
